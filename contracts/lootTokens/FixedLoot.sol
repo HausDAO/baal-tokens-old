@@ -63,6 +63,10 @@ contract FixedLoot is
         // this should not revert but should not do anything
     }
 
+    function paused() public pure returns (bool){
+        return false;
+    }
+
     /// @notice Baal-only function to mint loot.
     /// @param recipient Address to receive loot
     /// @param amount Amount to mint
