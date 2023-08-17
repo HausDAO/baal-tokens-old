@@ -10,10 +10,12 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "@daohaus/baal-contracts/contracts/interfaces/IBaal.sol";
-import "@daohaus/baal-contracts/contracts/interfaces/IBaalToken.sol";
+
 
 import "../interfaces/IShaman.sol";
 import "../interfaces/IBaalAndVaultSummoner.sol";
+import "../interfaces/IBaalFixedToken.sol";
+
 
 contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     IBaalAndVaultSummoner public _baalSummoner;
@@ -66,8 +68,8 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         // summon baal with new tokens
         (address baal, address vault) = _baalSummoner.summonBaalAndVault(
             abi.encode(
-                IBaalToken(sharesToken).name(),
-                IBaalToken(sharesToken).symbol(),
+                IBaalFixedToken(sharesToken).name(),
+                IBaalFixedToken(sharesToken).symbol(),
                 safeAddr,
                 forwarder, // forwarder
                 lootToken,
@@ -83,12 +85,13 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         // shaman setup with dao address, vault address and initShamanParams
         setUpShaman(address(shaman), baal, vault, initializationShamanParams);
 
-        // TODO: mint tokens to vault here
-        // should this address be configurable?
+        // mint tokens to vault here
+        IBaalFixedToken(lootToken).initialMint(vault);
 
         // change token ownership to baal
-        IBaalToken(lootToken).transferOwnership(address(baal));
-        IBaalToken(sharesToken).transferOwnership(address(baal));
+        // TODO in some cases transfer ownership will not work
+        IBaalFixedToken(lootToken).transferOwnership(address(baal));
+        IBaalFixedToken(sharesToken).transferOwnership(address(baal));
 
 
     }
@@ -112,7 +115,7 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
             new ERC1967Proxy(
                 template,
                 abi.encodeWithSelector(
-                    IBaalToken(template).setUp.selector,
+                    IBaalFixedToken(template).setUp.selector,
                     initParams
                 )
             )

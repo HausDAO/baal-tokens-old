@@ -17,6 +17,8 @@ contract FixedLoot is
     ERC20PermitUpgradeable,
     OwnableUpgradeable
 {
+    uint256 public _initialSupply;
+
     constructor() {
         _disableInitializers();
     }
@@ -25,7 +27,7 @@ contract FixedLoot is
     /// @dev initializer should prevent this from being called again
     /// @param name_ Name for ERC20 token trackers
     /// @param symbol_ Symbol for ERC20 token trackers
-    function setUp(string memory name_, string memory symbol_)
+    function setUp(string memory name_, string memory symbol_, uint256 initialSupply)
         external
         initializer
     {
@@ -36,6 +38,8 @@ contract FixedLoot is
         __ERC20Permit_init(name_);
         __ERC20Snapshot_init();
         __Ownable_init();
+
+        _initialSupply = initialSupply;
 
     }
 
@@ -51,25 +55,26 @@ contract FixedLoot is
 
     /// @notice Baal-only function to pause shares.
     function pause() public view onlyOwner {
-        revert NotSupported();
+        // this should not revert but should not do anything
     }
 
     /// @notice Baal-only function to pause shares.
     function unpause() public view onlyOwner {
-        revert NotSupported();
+        // this should not revert but should not do anything
     }
 
     /// @notice Baal-only function to mint loot.
     /// @param recipient Address to receive loot
     /// @param amount Amount to mint
     function mint(address recipient, uint256 amount) external view onlyOwner {
+        // should revert
         revert NotSupported();    
     }
 
-    function initialMint(uint256 initialSupply, address initialHolder) external onlyOwner {
+    function initialMint(address initialHolder) external onlyOwner {
         // TODO should only happen dureing init by factory
         if (totalSupply() > 0) revert AlreadyMinted();
-        _mint(initialHolder, initialSupply);    
+        _mint(initialHolder, _initialSupply);    
     }
 
     /// @notice Baal-only function to burn loot.
